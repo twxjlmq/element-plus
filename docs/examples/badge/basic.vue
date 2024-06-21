@@ -1,17 +1,19 @@
 <template>
   <el-badge :value="12" class="item">
-    <el-button size="small">comments</el-button>
+    <el-button>comments</el-button>
   </el-badge>
   <el-badge :value="3" class="item">
-    <el-button size="small">replies</el-button>
+    <el-button>replies</el-button>
   </el-badge>
   <el-badge :value="1" class="item" type="primary">
-    <el-button size="small">comments</el-button>
+    <el-button>comments</el-button>
   </el-badge>
   <el-badge :value="2" class="item" type="warning">
-    <el-button size="small">replies</el-button>
+    <el-button>replies</el-button>
   </el-badge>
-
+  <el-badge :value="1" class="item" color="green">
+    <el-button>custom background</el-button>
+  </el-badge>
   <el-dropdown trigger="click">
     <span class="el-dropdown-link">
       Click Me
@@ -39,6 +41,10 @@ import { CaretBottom } from '@element-plus/icons-vue'
 <style scoped>
 .item {
   margin-top: 10px;
-  margin-right: 40px;
+  margin-right: 30px;
+}
+
+.el-dropdown {
+  margin-top: 1.1rem;
 }
 </style>

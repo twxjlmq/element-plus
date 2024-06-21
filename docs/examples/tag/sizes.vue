@@ -1,5 +1,7 @@
 <template>
-  <el-tag class="mx-1" size="large">Large</el-tag>
-  <el-tag class="mx-1">Default</el-tag>
-  <el-tag class="mx-1" size="small">Small</el-tag>
+  <div class="flex gap-2">
+    <el-tag size="large">Large</el-tag>
+    <el-tag>Default</el-tag>
+    <el-tag size="small">Small</el-tag>
+  </div>
 </template>

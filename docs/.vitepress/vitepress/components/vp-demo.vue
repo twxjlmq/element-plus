@@ -1,62 +1,23 @@
 <script setup lang="ts">
-import { computed, toRef, getCurrentInstance } from 'vue'
-import { useClipboard } from '@vueuse/core'
-import { useToggle } from '../composables/toggle'
+import { computed, getCurrentInstance, ref, toRef } from 'vue'
+import { isClient, useClipboard, useToggle } from '@vueuse/core'
+import { CaretTop } from '@element-plus/icons-vue'
 import { useLang } from '../composables/lang'
 import { useSourceCode } from '../composables/source-code'
-import { usePlayGround } from '../composables/use-playground'
+import { usePlayground } from '../composables/use-playground'
 
 import demoBlockLocale from '../../i18n/component/demo-block.json'
-import GithubIcon from './icons/github.vue'
-import SourceCodeIcon from './icons/source-code.vue'
-import PlayGroundIcon from './icons/playground.vue'
-import CopyIcon from './icons/copy-icon.vue'
 
 import Example from './demo/vp-example.vue'
 import SourceCode from './demo/vp-source-code.vue'
 
-const props = defineProps({
-  // source is encoded via encodeURIComponent
-  source: {
-    type: String,
-    required: true,
-  },
-  path: {
-    type: String,
-    required: true,
-  },
-  css: {
-    type: String,
-    required: true,
-  },
-  cssPreProcessor: {
-    type: String,
-    required: true,
-  },
-  js: {
-    type: String,
-    required: true,
-  },
-  jsPreProcessor: {
-    type: String,
-    required: true,
-  },
-  html: {
-    type: String,
-    required: true,
-  },
-  demos: {
-    type: Object,
-    required: true,
-  },
-  rawSource: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-  },
-})
+const props = defineProps<{
+  demos: object
+  source: string
+  path: string
+  rawSource: string
+  description?: string
+}>()
 
 const vm = getCurrentInstance()!
 
@@ -65,10 +26,11 @@ const { copy, isSupported } = useClipboard({
   read: false,
 })
 
-const [sourceVisible, setSourceVisible] = useToggle()
+const [sourceVisible, toggleSourceVisible] = useToggle()
 const lang = useLang()
 const demoSourceUrl = useSourceCode(toRef(props, 'path'))
 
+const sourceCodeRef = ref<HTMLButtonElement>()
 const formatPathDemos = computed(() => {
   const demos = {}
 
@@ -85,9 +47,18 @@ const decodedDescription = computed(() =>
   decodeURIComponent(props.description!)
 )
 
-const onCodepenClicked = () => {
-  const code = usePlayGround(props.rawSource)
-  window.open(`https://play.element-plus.org/#${code}`)
+const onPlaygroundClick = () => {
+  const { link } = usePlayground(props.rawSource)
+  if (!isClient) return
+  window.open(link)
+}
+
+const onSourceVisibleKeydown = (e: KeyboardEvent) => {
+  if (['Enter', 'Space'].includes(e.code)) {
+    e.preventDefault()
+    toggleSourceVisible(false)
+    sourceCodeRef.value?.focus()
+  }
 }
 
 const copyCode = async () => {
@@ -107,71 +78,178 @@ const copyCode = async () => {
 <template>
   <ClientOnly>
     <!-- danger here DO NOT USE INLINE SCRIPT TAG -->
-    <p class="example-description" v-html="decodedDescription" />
+    <p text="sm" v-html="decodedDescription" />
+
     <div class="example">
+      <Example :file="path" :demo="formatPathDemos[path]" />
+
+      <ElDivider class="m-0" />
+
       <div class="op-btns">
-        <ElTooltip :content="locale['edit-in-editor']" :visible-arrow="false">
-          <ElIcon :size="20" class="op-btn">
-            <PlayGroundIcon @click="onCodepenClicked" />
+        <ElTooltip
+          :content="locale['edit-in-editor']"
+          :show-arrow="false"
+          :trigger="['hover', 'focus']"
+          :trigger-keys="[]"
+        >
+          <ElIcon
+            :size="16"
+            :aria-label="locale['edit-in-editor']"
+            tabindex="0"
+            role="link"
+            class="op-btn"
+            @click="onPlaygroundClick"
+            @keydown.prevent.enter="onPlaygroundClick"
+            @keydown.prevent.space="onPlaygroundClick"
+          >
+            <i-ri-flask-line />
           </ElIcon>
         </ElTooltip>
-        <ElTooltip :content="locale['edit-on-github']" :visible-arrow="false">
-          <ElIcon :size="20" class="op-btn github">
-            <a :href="demoSourceUrl" rel="noreferrer noopener" target="_blank">
-              <GithubIcon />
+        <ElTooltip
+          :content="locale['edit-on-github']"
+          :show-arrow="false"
+          :trigger="['hover', 'focus']"
+          :trigger-keys="[]"
+        >
+          <ElIcon
+            :size="16"
+            class="op-btn github"
+            style="color: var(--text-color-light)"
+          >
+            <a
+              :href="demoSourceUrl"
+              :aria-label="locale['edit-on-github']"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              <i-ri-github-line />
             </a>
           </ElIcon>
         </ElTooltip>
-        <ElTooltip :content="locale['copy-code']" :visible-arrow="false">
-          <ElIcon :size="20" class="op-btn" @click="copyCode">
-            <CopyIcon />
+        <ElTooltip
+          :content="locale['copy-code']"
+          :show-arrow="false"
+          :trigger="['hover', 'focus']"
+          :trigger-keys="[]"
+        >
+          <ElIcon
+            :size="16"
+            :aria-label="locale['copy-code']"
+            class="op-btn"
+            tabindex="0"
+            role="button"
+            @click="copyCode"
+            @keydown.prevent.enter="copyCode"
+            @keydown.prevent.space="copyCode"
+          >
+            <i-ri-file-copy-line />
           </ElIcon>
         </ElTooltip>
-        <ElTooltip :content="locale['view-source']" :visible-arrow="false">
-          <ElIcon :size="20" class="op-btn" @click="setSourceVisible">
-            <SourceCodeIcon />
-          </ElIcon>
+        <ElTooltip
+          :content="locale['view-source']"
+          :show-arrow="false"
+          :trigger="['hover', 'focus']"
+          :trigger-keys="[]"
+        >
+          <button
+            ref="sourceCodeRef"
+            :aria-label="
+              sourceVisible ? locale['hide-source'] : locale['view-source']
+            "
+            class="reset-btn el-icon op-btn"
+            @click="toggleSourceVisible()"
+          >
+            <ElIcon :size="16">
+              <i-ri-code-line />
+            </ElIcon>
+          </button>
         </ElTooltip>
       </div>
-      <ElDivider />
-      <Example :file="path" :demo="formatPathDemos[path]" />
-      <ElDivider v-if="sourceVisible" />
-      <el-collapse-transition>
+
+      <ElCollapseTransition>
         <SourceCode v-show="sourceVisible" :source="source" />
-      </el-collapse-transition>
+      </ElCollapseTransition>
+
+      <Transition name="el-fade-in-linear">
+        <div
+          v-show="sourceVisible"
+          class="example-float-control"
+          tabindex="0"
+          role="button"
+          @click="toggleSourceVisible(false)"
+          @keydown="onSourceVisibleKeydown"
+        >
+          <ElIcon :size="16">
+            <CaretTop />
+          </ElIcon>
+          <span>{{ locale['hide-source'] }}</span>
+        </div>
+      </Transition>
     </div>
   </ClientOnly>
 </template>
 
 <style scoped lang="scss">
-.example-description {
-  font-size: 14px;
-}
 .example {
   border: 1px solid var(--border-color);
   border-radius: var(--el-border-radius-base);
-  overflow: hidden;
 
   .op-btns {
     padding: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    height: 3rem;
-    line-height: 3rem;
+    height: 2.5rem;
+
+    .el-icon {
+      &:hover {
+        color: var(--text-color);
+      }
+    }
 
     .op-btn {
       margin: 0 0.5rem;
       cursor: pointer;
-      color: var(--text-color);
+      color: var(--text-color-lighter);
+      transition: 0.2s;
 
       &.github a {
-        color: var(--text-color);
+        transition: 0.2s;
+        color: var(--text-color-lighter);
+
+        &:hover {
+          color: var(--text-color);
+        }
       }
     }
   }
-  .el-divider {
-    margin: 0;
+
+  &-float-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid var(--border-color);
+    height: 44px;
+    box-sizing: border-box;
+    background-color: var(--bg-color, #fff);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    margin-top: -1px;
+    color: var(--el-text-color-secondary);
+    cursor: pointer;
+    position: sticky;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    span {
+      font-size: 14px;
+      margin-left: 10px;
+    }
+
+    &:hover {
+      color: var(--el-color-primary);
+    }
   }
 }
 </style>

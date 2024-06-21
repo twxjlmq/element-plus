@@ -1,7 +1,7 @@
 <template>
   <el-row class="tac">
     <el-col :span="12">
-      <h5>Default colors</h5>
+      <h5 class="mb-2">Default colors</h5>
       <el-menu
         default-active="2"
         class="el-menu-vertical-demo"
@@ -15,7 +15,7 @@
           </template>
           <el-menu-item-group title="Group One">
             <el-menu-item index="1-1">item one</el-menu-item>
-            <el-menu-item index="1-2">item one</el-menu-item>
+            <el-menu-item index="1-2">item two</el-menu-item>
           </el-menu-item-group>
           <el-menu-item-group title="Group Two">
             <el-menu-item index="1-3">item three</el-menu-item>
@@ -40,7 +40,7 @@
       </el-menu>
     </el-col>
     <el-col :span="12">
-      <h5>Custom colors</h5>
+      <h5 class="mb-2">Custom colors</h5>
       <el-menu
         active-text-color="#ffd04b"
         background-color="#545c64"
@@ -57,7 +57,7 @@
           </template>
           <el-menu-item-group title="Group One">
             <el-menu-item index="1-1">item one</el-menu-item>
-            <el-menu-item index="1-2">item one</el-menu-item>
+            <el-menu-item index="1-2">item two</el-menu-item>
           </el-menu-item-group>
           <el-menu-item-group title="Group Two">
             <el-menu-item index="1-3">item three</el-menu-item>
@@ -86,9 +86,9 @@
 
 <script lang="ts" setup>
 import {
-  Location,
   Document,
   Menu as IconMenu,
+  Location,
   Setting,
 } from '@element-plus/icons-vue'
 const handleOpen = (key: string, keyPath: string[]) => {
